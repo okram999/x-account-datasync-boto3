@@ -15,6 +15,12 @@ import boto3
 import json
 import os
 import time
+from botocore.config import Config
+
+my_config = Config(
+    region_name = 'us-east-1'
+)
+
 
 from dotenv import load_dotenv
 
@@ -166,7 +172,7 @@ def attach_s3_policy(assuming_role_arn):
 
 # create the datasync location for the destination s3 bucket in the source account
 def create_datasync_location_s3():
-    datasync = boto3.client("datasync")
+    datasync = boto3.client("datasync", config=my_config)
     response = datasync.create_location_s3(
         S3StorageClass="STANDARD",
         S3BucketArn="arn:aws:s3:::" + os.environ.get("TARGET_S3_NAME"),
@@ -176,7 +182,7 @@ def create_datasync_location_s3():
             + ":role/boto3-datasync-xaccount-s3-role"
         },
     )
-    print(response)
+    print(f'DataSync location with the Arn: {response["LocationArn"]} created with HTTPStatusCode: {response["ResponseMetadata"]["HTTPStatusCode"]}')
     return response["LocationArn"]
 
 
