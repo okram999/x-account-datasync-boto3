@@ -24,7 +24,6 @@ my_config = Config(
 
 from dotenv import load_dotenv
 
-load_dotenv()
 
 policy_to_attach = [
     "arn:aws:iam::aws:policy/AWSDataSyncFullAccess",
@@ -188,11 +187,17 @@ def create_datasync_location_s3():
 
 # main function to create the iam role and attach the policy
 def main():
+    #loading env variables
+    load_dotenv()
+    
+    # create IAM Policy
     custom_policy = create_iam_policy()
     policy_to_attach.append(custom_policy)
-
+    
+    # create IAM Role
     src_account_role = create_iam_role()
-
+    
+    # Attached AWS and Customer managed policies to the role
     for policy in policy_to_attach:
         attach_iam_policy(policy, src_account_role)
 
