@@ -17,9 +17,7 @@ import os
 import time
 from botocore.config import Config
 
-my_config = Config(
-    region_name = 'us-east-1'
-)
+my_config = Config(region_name="us-east-1")
 
 
 from dotenv import load_dotenv
@@ -181,22 +179,24 @@ def create_datasync_location_s3():
             + ":role/boto3-datasync-xaccount-s3-role"
         },
     )
-    print(f'DataSync location with the Arn: {response["LocationArn"]} created with HTTPStatusCode: {response["ResponseMetadata"]["HTTPStatusCode"]}')
+    print(
+        f'DataSync location with the Arn: {response["LocationArn"]} created with HTTPStatusCode: {response["ResponseMetadata"]["HTTPStatusCode"]}'
+    )
     return response["LocationArn"]
 
 
 # main function to create the iam role and attach the policy
 def main():
-    #loading env variables
+    # loading env variables
     load_dotenv()
-    
+
     # create IAM Policy
     custom_policy = create_iam_policy()
     policy_to_attach.append(custom_policy)
-    
+
     # create IAM Role
     src_account_role = create_iam_role()
-    
+
     # Attached AWS and Customer managed policies to the role
     for policy in policy_to_attach:
         attach_iam_policy(policy, src_account_role)
