@@ -15,10 +15,15 @@ import boto3
 import json
 import os
 import time
+from botocore.config import Config
+
+my_config = Config(
+    region_name = 'us-east-1'
+)
+
 
 from dotenv import load_dotenv
 
-load_dotenv()
 
 policy_to_attach = [
     "arn:aws:iam::aws:policy/AWSDataSyncFullAccess",
@@ -166,7 +171,7 @@ def attach_s3_policy(assuming_role_arn):
 
 # create the datasync location for the destination s3 bucket in the source account
 def create_datasync_location_s3():
-    datasync = boto3.client("datasync")
+    datasync = boto3.client("datasync", config=my_config)
     response = datasync.create_location_s3(
         S3StorageClass="STANDARD",
         S3BucketArn="arn:aws:s3:::" + os.environ.get("TARGET_S3_NAME"),
@@ -176,17 +181,23 @@ def create_datasync_location_s3():
             + ":role/boto3-datasync-xaccount-s3-role"
         },
     )
-    print(response)
+    print(f'DataSync location with the Arn: {response["LocationArn"]} created with HTTPStatusCode: {response["ResponseMetadata"]["HTTPStatusCode"]}')
     return response["LocationArn"]
 
 
 # main function to create the iam role and attach the policy
 def main():
+    #loading env variables
+    load_dotenv()
+    
+    # create IAM Policy
     custom_policy = create_iam_policy()
     policy_to_attach.append(custom_policy)
-
+    
+    # create IAM Role
     src_account_role = create_iam_role()
-
+    
+    # Attached AWS and Customer managed policies to the role
     for policy in policy_to_attach:
         attach_iam_policy(policy, src_account_role)
 
